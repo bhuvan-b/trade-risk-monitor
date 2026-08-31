@@ -1,0 +1,34 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trade-generator
+  namespace: risk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trade-generator
+  template:
+    metadata:
+      labels:
+        app: trade-generator
+    spec:
+      containers:
+        - name: trade-generator
+          image: risk/trade-generator:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: INGESTION_URL
+              value: http://ingestion-service.risk.svc.cluster.local:3001/trades
+            - name: TRADES_PER_SECOND
+              value: "2"
+            - name: BURST_MODE
+              value: "false"  # Set to "true" to stress-test HPA
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi

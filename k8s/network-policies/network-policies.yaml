@@ -1,0 +1,237 @@
+# ── Default: deny all ingress and egress in the risk namespace ──────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: risk
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# ── Allow DNS for all pods (required for cluster-internal DNS) ───────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: risk
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+---
+# ── Ingestion service ────────────────────────────────────────────────────────
+# Ingress: from Ingress controller + trade-generator
+# Egress:  to Kafka only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ingestion-service-policy
+  namespace: risk
+spec:
+  podSelector:
+    matchLabels:
+      app: ingestion-service
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app: trade-generator
+      ports:
+        - port: 3001
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - port: 9092
+
+---
+# ── Risk engine ──────────────────────────────────────────────────────────────
+# Ingress: only health probes from kubelet (no external access)
+# Egress:  Kafka (consume) + Postgres (write)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: risk-engine-policy
+  namespace: risk
+spec:
+  podSelector:
+    matchLabels:
+      app: risk-engine
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - port: 3002  # Health probes from kubelet
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - port: 9092
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - port: 5432
+
+---
+# ── API service ──────────────────────────────────────────────────────────────
+# Ingress: Ingress controller + frontend pods
+# Egress:  Postgres only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-service-policy
+  namespace: risk
+spec:
+  podSelector:
+    matchLabels:
+      app: api-service
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app: frontend
+      ports:
+        - port: 3003
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - port: 5432
+
+---
+# ── Frontend ─────────────────────────────────────────────────────────────────
+# Ingress: Ingress controller only
+# Egress:  api-service only (nginx reverse proxy)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-policy
+  namespace: risk
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 80
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: api-service
+      ports:
+        - port: 3003
+
+---
+# ── Postgres ─────────────────────────────────────────────────────────────────
+# Ingress: risk-engine + api-service only
+# Egress:  nothing
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-policy
+  namespace: risk
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: risk-engine
+        - podSelector:
+            matchLabels:
+              app: api-service
+      ports:
+        - port: 5432
+
+---
+# ── Kafka ────────────────────────────────────────────────────────────────────
+# Ingress: ingestion-service (produce) + risk-engine (consume)
+# Egress:  nothing
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kafka-policy
+  namespace: risk
+spec:
+  podSelector:
+    matchLabels:
+      app: kafka
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: ingestion-service
+        - podSelector:
+            matchLabels:
+              app: risk-engine
+      ports:
+        - port: 9092
+
+---
+# ── Trade generator ──────────────────────────────────────────────────────────
+# Egress: ingestion-service only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: trade-generator-policy
+  namespace: risk
+spec:
+  podSelector:
+    matchLabels:
+      app: trade-generator
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ingestion-service
+      ports:
+        - port: 3001

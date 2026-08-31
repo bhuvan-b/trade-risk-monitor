@@ -1,0 +1,54 @@
+# Install ingress-nginx first:
+#   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+# Then add to /etc/hosts:
+#   127.0.0.1  risk.local
+#
+# No rewrite: alert-api's own routes are already prefixed with /api
+# (see services/alert-api/main.py — @app.get("/api/summary") etc.),
+# so the full incoming path is forwarded unchanged.
+# Examples:
+#   /api/summary  → /api/summary  on alert-api
+#   /api/exposure → /api/exposure on alert-api
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: risk-ingress
+  namespace: risk
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: risk.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: alert-api
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+    - host: localhost
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: alert-api
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

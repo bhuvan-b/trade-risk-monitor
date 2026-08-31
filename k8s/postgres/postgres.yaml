@@ -1,0 +1,114 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: risk
+type: Opaque
+stringData:
+  POSTGRES_USER: risk
+  POSTGRES_PASSWORD: riskpassword
+  POSTGRES_DB: riskdb
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: risk
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS counterparty_exposure (
+      counterparty_id   VARCHAR(64) PRIMARY KEY,
+      exposure          NUMERIC(18, 2) NOT NULL DEFAULT 0,
+      limit_amount      NUMERIC(18, 2) NOT NULL DEFAULT 1000000,
+      updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS breaches (
+      id               SERIAL PRIMARY KEY,
+      counterparty_id  VARCHAR(64) NOT NULL,
+      exposure         NUMERIC(18, 2) NOT NULL,
+      limit_amount     NUMERIC(18, 2) NOT NULL,
+      breached_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    -- Seed counterparties with limits
+    INSERT INTO counterparty_exposure (counterparty_id, limit_amount)
+    VALUES
+      ('CP-ALPHA',   1000000),
+      ('CP-BETA',    750000),
+      ('CP-GAMMA',   500000),
+      ('CP-DELTA',   1250000),
+      ('CP-EPSILON', 800000)
+    ON CONFLICT DO NOTHING;
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: risk
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: risk
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "risk", "-d", "riskdb"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "risk", "-d", "riskdb"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: init-sql
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: init-sql
+          configMap:
+            name: postgres-init
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

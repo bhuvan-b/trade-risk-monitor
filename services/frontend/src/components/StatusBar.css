@@ -1,0 +1,55 @@
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-breach-alert {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--breach);
+  letter-spacing: 0.08em;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.status-dot-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-ok   { background: var(--safe); box-shadow: 0 0 6px var(--safe); }
+.dot-err  { background: var(--breach); }
+.dot-conn { background: var(--warn); animation: pulse 1s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.status-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.status-time {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
