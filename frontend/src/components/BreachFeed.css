@@ -1,0 +1,60 @@
+.feed-empty {
+  padding: 32px 16px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.feed-empty-icon {
+  font-size: 20px;
+  color: var(--safe);
+}
+
+.breach-feed {
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+.breach-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--breach);
+  transition: background 0.15s;
+}
+.breach-item:hover { background: rgba(248, 81, 73, 0.04); }
+.breach-item:last-child { border-bottom: none; }
+
+.breach-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.breach-cp {
+  font-weight: 500;
+  font-size: 13px;
+}
+.breach-time {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.breach-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.breach-exposure {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--breach);
+}
+.breach-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.mono { font-family: var(--mono); }

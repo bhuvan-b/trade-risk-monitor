@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: risk
+type: Opaque
+stringData:
+  POSTGRES_USER: risk
+  POSTGRES_PASSWORD: risk
+  POSTGRES_DB: riskdb
+  DATABASE_URL: "postgresql://risk:risk@postgres:5432/riskdb"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: risk
+spec:
+  clusterIP: None   # headless — StatefulSet pods get stable DNS
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: risk
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          # ── Probes (Phase 4 practice) ─────────────────────
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "risk", "-d", "riskdb"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "risk", "-d", "riskdb"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          # ── Resources (Phase 4 practice) ──────────────────
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: pgdata
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

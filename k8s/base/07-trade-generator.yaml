@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: trade-generator
+  namespace: risk
+spec:
+  # Every 2 minutes — fast enough to see the dashboard update in a demo
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Forbid   # don't stack runs; one at a time
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: generator
+              image: localhost:5000/trade-generator:latest
+              imagePullPolicy: Always
+              env:
+                - name: INGESTION_URL
+                  value: "http://ingestion:8080/trade"
+                - name: TRADES_PER_RUN
+                  value: "30"
+                - name: SLEEP_BETWEEN_MS
+                  value: "100"
