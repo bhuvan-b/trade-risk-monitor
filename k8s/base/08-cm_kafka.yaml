@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: risk
+data:
+  KAFKA_TOPIC: "trades"
+  DEFAULT_EXPOSURE_LIMIT: "10000000"

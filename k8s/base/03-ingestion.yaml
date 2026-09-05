@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: ingestion
-          image: localhost:5000/ingestion:broken   # local registry; swap for your Docker Hub image
+          image: localhost:5000/ingestion:latest   # local registry; swap for your Docker Hub image
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
