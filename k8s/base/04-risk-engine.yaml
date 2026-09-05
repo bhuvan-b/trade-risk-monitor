@@ -30,11 +30,19 @@ spec:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-0.kafka:9092"
             - name: KAFKA_TOPIC
-              value: "trades"
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-config
+                  key: KAFKA_TOPIC
+            #   value: "trades"
             - name: KAFKA_GROUP_ID
               value: "risk-engine"
             - name: DEFAULT_EXPOSURE_LIMIT
-              value: "10000000"
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-config
+                  key: DEFAULT_EXPOSURE_LIMIT
+            #   value: "10000000"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
