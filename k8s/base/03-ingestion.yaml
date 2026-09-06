@@ -6,7 +6,7 @@ metadata:
   labels:
     app: ingestion
 spec:
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: ingestion
@@ -15,6 +15,23 @@ spec:
       labels:
         app: ingestion
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
+      # affinity:
+      #   podAntiAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #     - labelSelector:
+      #         matchExpressions:
+      #         - key: app
+      #           operator: In
+      #           values:
+      #           - ingestion
+      #       topologyKey: "kubernetes.io/hostname"
       containers:
         - name: ingestion
           image: localhost:5000/ingestion:latest   # local registry; swap for your Docker Hub image
@@ -47,6 +64,20 @@ spec:
             limits:
               cpu: "300m"
               memory: "256Mi"
+      tolerations:
+        - key: "workload"
+          operator: "Equal"
+          value: "stateful"
+          effect: "NoSchedule"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: "kubernetes.io/hostname"
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: ingestion
+          matchLabelKeys:
+            - pod-template-hash
 ---
 apiVersion: v1
 kind: Service

@@ -52,3 +52,10 @@ spec:
                 name: frontend
                 port:
                   number: 80
+          - path: /risk-engine/metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: risk-engine
+                port:
+                  number: 9090

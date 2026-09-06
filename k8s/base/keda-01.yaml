@@ -1,0 +1,49 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: risk-engine-scale-keda
+  namespace: risk
+spec:
+  scaleTargetRef:
+    name: risk-engine                # Mandatory. Must be in the same namespace as the ScaledObject
+  pollingInterval:  10                                      # Optional. Default: 30 seconds
+  # cooldownPeriod:   300                                     # Optional. Default: 300 seconds
+  # initialCooldownPeriod:  0                                 # Optional. Default: 0 seconds
+  # idleReplicaCount: 0                                       # Optional. Default: ignored, must be less than minReplicaCount
+  # minReplicaCount:  1                                       # Optional. Default: 0
+  # maxReplicaCount:  100                                     # Optional. Default: 100
+  # fallback:                                                 # Optional. Section to specify fallback options
+  #   failureThreshold: 3                                     # Mandatory if fallback section is included
+  #   replicas: 6                                             # Mandatory if fallback section is included
+  #   behavior: {kind-of-behavior}                            # Optional. Default: "static"
+  # advanced:                                                 # Optional. Section to specify advanced options
+  #   restoreToOriginalReplicaCount: true/false               # Optional. Default: false
+  #   horizontalPodAutoscalerConfig:                          # Optional. Section to specify HPA related options
+  #     name: {name-of-hpa-resource}                          # Optional. Default: keda-hpa-{scaled-object-name}
+  #     behavior:                                             # Optional. Use to modify HPA's scaling behavior
+  #       scaleDown:
+  #         stabilizationWindowSeconds: 300
+  #         policies:
+  #         - type: Percent
+  #           value: 100
+  #           periodSeconds: 15
+  triggers:
+  - type: kafka
+    metadata:
+      bootstrapServers: kafka.risk:9092
+      consumerGroup: "risk-engine"
+      topic: "trades"
+      # lagThreshold: '5'
+      # activationLagThreshold: '3'
+      # offsetResetPolicy: latest
+      # allowIdleConsumers: 'false'
+      # scaleToZeroOnInvalidOffset: 'false'
+      # excludePersistentLag: 'false'
+      # limitToPartitionsWithLag: 'false'
+      # ensureEvenDistributionOfPartitions: 'false'
+      # version: 1.0.0
+      # partitionLimitation: '1,2,10-20,31'
+      # sasl: plaintext
+      # tls: enable
+      # unsafeSsl: 'false'
+  # {list of triggers to activate scaling of the target resource}
