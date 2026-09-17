@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: risk-engine-alerts
+  namespace: risk
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: risk-engine
+      rules:
+        - alert: RiskEngineHighBreachRate
+          expr: sum by(__name__) (rate(risk_breaches_total[5m])) > 0.1
+          for: 1m
+          labels:
+            severity: critical
+            service: risk-engine
+          annotations:
+            summary: "Risk engine breach rate is high"
+            description: "Risk-engine breach rate is above 0.5 breaches/sec for more than 1 minute."
