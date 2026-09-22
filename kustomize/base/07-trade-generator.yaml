@@ -16,7 +16,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: generator
-              image: 991046440740.dkr.ecr.eu-west-1.amazonaws.com/trade-generator:latest
+              image: localhost:5000/trade-generator:latest
               imagePullPolicy: Always
               env:
                 - name: INGESTION_URL

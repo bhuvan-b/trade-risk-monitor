@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: alert-api
-          image: 991046440740.dkr.ecr.eu-west-1.amazonaws.com/alert-api:latest
+          image: localhost:5000/alert-api:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

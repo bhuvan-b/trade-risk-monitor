@@ -34,7 +34,7 @@ spec:
       #       topologyKey: "kubernetes.io/hostname"
       containers:
         - name: ingestion
-          image: 991046440740.dkr.ecr.eu-west-1.amazonaws.com/ingestion:latest   # local registry; swap for your Docker Hub image
+          image: localhost:5000/ingestion:latest   # local registry; swap for your Docker Hub image
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

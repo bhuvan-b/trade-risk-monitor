@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-REGISTRY="localhost:5000"
+REGISTRY="991046440740.dkr.ecr.eu-west-1.amazonaws.com"
 SERVICES=("ingestion" "risk-engine" "alert-api" "trade-generator" "frontend")
 TARGET="${1:-all}"
 
