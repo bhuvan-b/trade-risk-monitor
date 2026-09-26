@@ -1,0 +1,7 @@
+clusterName: trade-risk-eks-1
+
+serviceAccount:
+  create: true
+  name: aws-load-balancer-controller
+
+replicaCount: 2

@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: aws-load-balancer-controller
+  namespace: argocd
+
+spec:
+  project: default
+
+  sources:
+  - repoURL: https://aws.github.io/eks-charts
+    chart: aws-load-balancer-controller
+
+    helm:
+      valueFiles:
+        - $values/infrastructure/aws-load-balancer-controller/values.yaml
+
+  - repoURL: https://github.com/bhuvan-b/trade-risk-monitor.git
+    targetRevision: 03_EKS_Setup
+    ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
