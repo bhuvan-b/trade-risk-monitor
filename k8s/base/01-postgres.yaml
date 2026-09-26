@@ -86,6 +86,7 @@ spec:
     - metadata:
         name: pgdata
       spec:
+        storageClassName: gp3
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
