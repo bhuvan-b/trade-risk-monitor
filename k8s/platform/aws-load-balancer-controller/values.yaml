@@ -1,0 +1,7 @@
+clusterName: trade-risk-eks-man
+
+region: eu-west-1
+
+serviceAccount:
+  create: true
+  name: aws-load-balancer-controller
