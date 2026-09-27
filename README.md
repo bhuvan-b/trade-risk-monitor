@@ -45,13 +45,13 @@ Project also includes setup with
 | trade-generator | Python | — | CronJob, POSTs synthetic trades every 2min |
 
 ## Project Snippets
-![alt text](1-ArgoCD.png)
-![alt text](2-RiskMonitor-UI.png) 
-![alt text](3-RiskEngine-Metrics.png) 
-![alt text](4-Prometheus.png) 
-![alt text](4.5-Prometheus-Targets.png) 
-![alt text](5-Grafana-Dashboard.png)
-![alt text](5-Grafana-Loki.png) 
+![alt text](assets/images/1-ArgoCD.png)
+![alt text](assets/images/2-RiskMonitor-UI.png) 
+![alt text](assets/images/3-RiskEngine-Metrics.png) 
+![alt text](assets/images/4-Prometheus.png) 
+![alt text](assets/images/4.5-Prometheus-Targets.png) 
+![alt text](assets/images/5-Grafana-Dashboard.png)
+![alt text](assets/images/5-Grafana-Loki.png) 
 
 ## Quick Start
 
