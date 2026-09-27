@@ -7,6 +7,9 @@ grafana:
 
 prometheus:
   enabled: true
+  prometheusSpec:
+    externalUrl: "http://k8s-monitori-monitori-b476036113-1946841608.eu-west-1.elb.amazonaws.com/prometheus/"
+    routePrefix: "/prometheus"
 
 alertmanager:
   enabled: true
