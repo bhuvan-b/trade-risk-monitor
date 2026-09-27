@@ -33,3 +33,10 @@ spec:
                 name: risk-engine
                 port:
                   number: 9090
+          - path: /prometheus
+            pathType: Prefix
+            backend:
+              service:
+                name: monitoring-kube-prometheus-prometheus.monitoring
+                port:
+                  number: 9090
